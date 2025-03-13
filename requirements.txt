@@ -6,3 +6,6 @@ matplotlib
 pronouncing
 textstat
 vaderSentiment
+tqdm
+textblob
+seaborn
