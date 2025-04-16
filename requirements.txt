@@ -3,9 +3,13 @@ nltk
 pandas
 numpy
 matplotlib
+seaborn
 pronouncing
 textstat
-vaderSentiment
-tqdm
+torch
+transformers
+joblib
+gensim
+iterstrat
 textblob
-seaborn
+tqdm

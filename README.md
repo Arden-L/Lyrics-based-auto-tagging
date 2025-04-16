@@ -1,27 +1,85 @@
-# Lyrics-based-auto-tagging
+# Lyrics-Based Auto-Tagging
 
-This repository contains the lyrics-based auto-tagging project.
+This project explores whether **lyrical content alone** can be used to classify songs by **genre** in a multi-label setting. We compare **handcrafted linguistic features** with **deep learning-based embeddings**, analyzing their individual and combined effectiveness using a structured classification pipeline.
 
+## Project Goals
 
-## Installation of dependencies
+This project aimed to explore:
+- Whether lyrics can support accurate multi-label genre classification.
+- The contribution of handcrafted features (rhyme density, sentiment, readability, lexical complexity) vs. deep embeddings (Word2Vec, FastText, BERT).
+- The causes of model failure via feature ablation and error analysis.
+- The impact of genre label design (e.g., using top-N genres or amalgamating subgenres).
 
-Python version used was Python 3.12.9
+## Implementation Overview
 
-We recommend the use of a virtual environment for dealing with the dependencies of this project. The Python libraries necessary for the project are included in the <code>requirements.txt</code>. You could use [Conda](https://anaconda.org/anaconda/conda), or another virtual environment handler of your choosing.
+### Feature Engineering
+- **Handcrafted Features**:
+  - Rhyme density (via CMUdict)
+  - Lexical complexity (unique/total tokens)
+  - Sentiment polarity & subjectivity (TextBlob)
+  - Readability (Flesch Reading Ease via `textstat`)
+- **Deep Learning Embeddings**:
+  - Pretrained Word2Vec (Google News)
+  - FastText (trained on dataset)
+  - BERT (mean-pooled contextual embeddings)
 
-One of the many sequence of steps is as follows:
-1. Prepare your virtual environment of choosing. Create your virtual environment. Ensure pip is installed.
-2. Use <code>pip install -r requirements.txt</code> (or an equivalent command)
+### Classification Models
+Models were trained under three configurations:
+- Handcrafted-only
+- Deep-only
+- Combined
 
-## program.py
+Classifiers include:
+- Logistic Regression
+- Support Vector Machine (SVM)
+- Random Forest
 
-requires a local copy of the music4all dataset
-    - make sure to change the path to the data
+All models use `OneVsRestClassifier` to support multi-label prediction.
 
-currently just creates a pandas dataframe using csv's and lyric folder from music4all dataset, 
-but has commented out code from Google's AI Gemini 2.0 Pro Experimental model outlining:
-    - handcrafted features
-    - classifiers
+### Evaluation & Analysis
+- **Feature Ablation**: Assesses accuracy impact when removing individual handcrafted features.
+- **Error Analysis**: Identifies common genre confusions and quantifies feature differences in errors.
+- **Genre Limiting**: Evaluates performance using top-5/top-8 genres and amalgamated genre categories.
+- **Performance Metrics**: Accuracy, F1 (macro/micro), Jaccard score, and Hamming loss.
 
+## Results Summary
 
-when troubleshooting, set the subset_size to a small number, as running it on the entire database takes about 5 minutes on my desktop.
+Handcrafted features alone offered limited predictive value, but combining them with deep embeddings improved performance. Readability was the most impactful handcrafted feature, particularly in error separation. Genre amalgamation and label space reduction significantly improved classification metrics on a subset of data. Random Forest achieved the highest exact match accuracy on the entire dataset (~19%), while SVM and Logistic Regression yielded stronger partial-label metrics (e.g., micro-F1 ≈ 0.35).
+
+## Setup
+
+- Python version: `3.12.9`
+- Use a virtual environment (e.g., Conda or venv)
+- Install requirements:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+## Dataset Requirements
+
+This project requires a **local copy of the music4all dataset**.
+
+**Before running:**
+- Update the dataset path in `lyric_based_classification.py`
+- Ensure the following files exist in the dataset folder:
+  - Metadata TSVs (`genres.tsv`, `metadata.tsv`, `language.tsv`, `tags.tsv`)
+  - Lyrics directory with individual `.txt` files
+
+## Running the Program
+
+The main logic is inside `lyric_based_classification.py`. It:
+- Loads and preprocesses the dataset
+- Extracts and caches features
+- Trains and evaluates models
+- Conducts feature ablation and error analysis
+- Outputs metrics, plots, and CSVs for reproducibility
+
+**Tip for testing**: Use `subset_size` option to reduce runtime during development.
+
+## Output Artifacts
+
+- `all_classifier_metrics.json` – Summary of all evaluation results
+- `feature_ablation_results.csv` – Accuracy drops per ablated feature
+- `*.png` – Visual comparisons (accuracy, error heatmaps, feature impact)
+- `error_analysis_*.json` – Feature differences and common misclassifications
+- Cached files: `*.joblib` and `*.csv`feature representations
